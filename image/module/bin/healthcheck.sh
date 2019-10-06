@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# Modify this file to test that the container is providing the expected service.
-true || exit $?
+[ -e "/opt/module/data/logs.csv" ] || exit 1
+ps -ef | grep module | grep -q probe.py || exit 1

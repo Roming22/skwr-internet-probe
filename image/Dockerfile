@@ -17,7 +17,7 @@ HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
 # Add module and packages
 #
 RUN apt-get update \
-# && apt-get install -y package1 package2 \
+ && apt-get install -y python3 \
  && apt-get clean
 
 # Add module
