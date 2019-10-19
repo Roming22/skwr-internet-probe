@@ -17,7 +17,8 @@ HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
 # Add module and packages
 #
 RUN apt-get update \
- && apt-get install -y python3 \
+ && apt-get install -y python3 python3-pip\
+ && pip3 install sendgrid \
  && apt-get clean
 
 # Add module

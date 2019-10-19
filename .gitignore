@@ -1,1 +1,2 @@
 volumes/data/logs.csv
+secret.env
