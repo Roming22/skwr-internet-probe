@@ -5,19 +5,24 @@ from time import sleep
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+URLS = ["www.google.com", "en.wikipedia.org", "www.amazon.com", "www.twitter.com"]
+
 def get_now():
   return dt.datetime.now().replace(microsecond=0)
 
 
 def check_connection():
-  connected = True
-  conn = http.HTTPConnection("www.google.com", timeout=5)
-  try:
-    conn.request("HEAD", "/")
+  connected = False
+  for url in URLS:
+    conn = http.HTTPConnection(url, timeout=1)
+    try:
+      conn.request("HEAD", "/")
+      connected = True
+    except:
+      print("Could not connect to {}".format(url))
     conn.close()
-  except:
-    connected = False
-  conn.close()
+    if connected:
+      break
   return connected
 
 def send_mail(body):
