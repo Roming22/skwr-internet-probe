@@ -10,6 +10,10 @@
     "mounts": [
         "source=${localWorkspaceFolder}/volumes/data,target=/opt/module/data,type=bind"
     ],
+    "runArgs": [
+        "--env-file",
+        "${localWorkspaceFolder}/etc/secret.env"
+    ],
     // Set *default* container specific settings.json values on container create.
     "settings": {
         "terminal.integrated.shell.linux": "/bin/bash",
