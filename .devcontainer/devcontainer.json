@@ -1,0 +1,31 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.134.0/containers/python-3
+{
+    "name": "Python 3",
+    "build": {
+        "dockerfile": "../image/Dockerfile",
+        "context": "..",
+        "target": "dev"
+    },
+    "mounts": [
+        "source=${localWorkspaceFolder}/volumes/data,target=/opt/module/data,type=bind"
+    ],
+    // Set *default* container specific settings.json values on container create.
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.blackPath": "/usr/local/bin/black",
+        "python.linting.mypyPath": "/usr/local/bin/mypy",
+        "python.linting.pylintPath": "/usr/local/bin/pylint"
+    },
+    // Add the IDs of extensions you want installed when the container is created.
+    "extensions": [
+        "aaron-bond.better-comments",
+        "GitHub.vscode-pull-request-github",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "njpwerner.autodocstring"
+    ],
+}

@@ -1,29 +1,43 @@
-FROM   balenalib/raspberrypi3
+################################################################################
+# Base image
+################################################################################
+FROM python:3.8-slim AS base
 
 # Make sure we don't get notifications we can't answer during building.
-ENV    DEBIAN_FRONTEND noninteractive
-
-#
-# Default skwr config
-#
-RUN groupadd -g 9999 skwr \
- && useradd -r -u 9999 -g skwr skwr
-ENV PATH="/opt/module/bin:$PATH"
-ENTRYPOINT ["run.sh"]
-HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
-    CMD healthcheck.sh || exit 1
+ENV DEBIAN_FRONTEND noninteractive
 
 #
 # Add module and packages
 #
-RUN apt-get update \
- && apt-get install -y python3 python3-pip\
- && pip3 install sendgrid \
- && apt-get clean
+RUN pip3 install sendgrid
 
-# Add module
+
+
+################################################################################
+# Development image
+################################################################################
+FROM base AS dev
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update \
+    && apt-get install -y git \
+    && apt-get clean \
+    && pip install black mypy pylint
+
+
+
+################################################################################
+# Production image
+################################################################################
+FROM base as prod
+#
+# Default skwr config
+#
+RUN groupadd -g 9999 skwr \
+    && useradd -r -u 9999 -g skwr skwr
 COPY module /opt/module
 RUN chmod +x /opt/module/bin/*.sh
-
+ENV PATH="/opt/module/bin:${PATH}"
+ENTRYPOINT ["run.sh"]
+HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
+    CMD healthcheck.sh || exit 1
 USER skwr
-
