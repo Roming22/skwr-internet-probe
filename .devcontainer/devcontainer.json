@@ -30,6 +30,7 @@
         "GitHub.vscode-pull-request-github",
         "ms-azuretools.vscode-docker",
         "ms-python.python",
+        "mutantdino.resourcemonitor",
         "njpwerner.autodocstring"
     ],
 }

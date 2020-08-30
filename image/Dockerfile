@@ -7,6 +7,13 @@ FROM python:3.8-slim AS base
 ENV DEBIAN_FRONTEND noninteractive
 
 #
+# Default config
+#
+RUN groupadd -g 9999 skwr \
+    && useradd -m -r -u 9999 -g skwr skwr
+
+
+#
 # Add module and packages
 #
 RUN pip3 install sendgrid
@@ -17,25 +24,23 @@ RUN pip3 install sendgrid
 # Development image
 ################################################################################
 FROM base AS dev
-ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-    && apt-get install -y git \
+    && apt-get install -y git procps \
     && apt-get clean \
     && pip install black mypy pylint
+USER skwr
 
 
 
 ################################################################################
 # Production image
 ################################################################################
-FROM base as prod
+FROM base AS prod
 #
 # Default skwr config
 #
-RUN groupadd -g 9999 skwr \
-    && useradd -r -u 9999 -g skwr skwr
 COPY module /opt/module
-RUN chmod +x /opt/module/bin/*.sh
+RUN rm -rf /home/skwr; chmod +x /opt/module/bin/*.sh
 ENV PATH="/opt/module/bin:${PATH}"
 ENTRYPOINT ["run.sh"]
 HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
