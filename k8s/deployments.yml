@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: internet-probe
+  labels:
+    app: internet-probe
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: internet-probe
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: internet-probe
+    spec:
+      volumes:
+        - name: nas
+          persistentVolumeClaim:
+            claimName: monitoring-internet-probe-pvc
+      containers:
+        - image: alpine
+          name: probe
+          env:
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: send-grid
+                  key: API_KEY
+          envFrom:
+            - configMapRef:
+                name: internet-probe-env
+          volumeMounts:
+            - mountPath: "/opt/module/data"
+              name: nas
+          command: ["sleep", "infinity"]

@@ -1,2 +1,1 @@
-volumes/data/*.csv
-secret.env
+*.secret

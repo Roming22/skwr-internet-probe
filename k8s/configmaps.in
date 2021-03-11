@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+data:
+  MAIL_FROM: $MAIL_FROM
+  MAIL_TO: $MAIL_TO
+kind: ConfigMap
+metadata:
+  name: internet-probe-env
+  labels:
+    app: internet-probe
+  namespace: monitoring
