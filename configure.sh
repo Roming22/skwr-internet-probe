@@ -17,6 +17,7 @@ ask(){
 	local DEFAULT
 	local PAD
 	local INPUT
+	local READ_ARGS
 
 	[[ -n "${!VAR}" ]] && DEFAULT="${!VAR}" || unset DEFAULT
 
@@ -48,7 +49,7 @@ ask(){
 
 	case "$TYPE" in
 		secret)
-			echo "-${INPUT}-"
+			echo
 			INPUT="$( echo -n "${INPUT}" | base64  | tr -d '\n' )"
 			;;
 	esac

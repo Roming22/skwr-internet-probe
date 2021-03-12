@@ -4,7 +4,7 @@ FROM   alpine
 # Default skwr config
 #
 RUN addgroup -g 9999 skwr \
- && adduser -G skwr -S -u 9999 skwr
+    && adduser -G skwr -S -u 9999 skwr
 ENV PATH="/opt/module/bin:$PATH"
 ENTRYPOINT ["run.sh"]
 HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
@@ -13,8 +13,8 @@ HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
 #
 # Add module and packages
 #
-RUN apk add python3 py3-pip \
- && pip3 install sendgrid
+RUN apk add bash python3 py3-pip \
+    && pip3 install sendgrid
 
 # Add module
 COPY module /opt/module

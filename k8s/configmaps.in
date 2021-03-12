@@ -5,7 +5,7 @@ data:
   MAIL_TO: $MAIL_TO
 kind: ConfigMap
 metadata:
-  name: internet-probe-env
+  name: network.www-probe.env
   labels:
-    app: internet-probe
+    app: network
   namespace: monitoring

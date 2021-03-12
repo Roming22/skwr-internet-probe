@@ -2,28 +2,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: internet-probe
+  name: network
   labels:
-    app: internet-probe
+    app: network
   namespace: monitoring
 spec:
   selector:
     matchLabels:
-      app: internet-probe
+      app: network
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: internet-probe
+        app: network
     spec:
       volumes:
         - name: nas
           persistentVolumeClaim:
-            claimName: monitoring-internet-probe-pvc
+            claimName: monitoring.network.www-probe.pvc
       containers:
-        - image: alpine
-          name: probe
+        - image: local.registry/skwr/monitoring/www-probe
+          name: www-probe
           env:
             - name: SENDGRID_API_KEY
               valueFrom:
@@ -32,8 +32,7 @@ spec:
                   key: API_KEY
           envFrom:
             - configMapRef:
-                name: internet-probe-env
+                name: network.www-probe.env
           volumeMounts:
             - mountPath: "/opt/module/data"
               name: nas
-          command: ["sleep", "infinity"]
