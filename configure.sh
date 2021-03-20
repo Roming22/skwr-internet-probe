@@ -66,6 +66,7 @@ write_secret(){
 }
 
 create_secret(){
+	ask value mandatory MODEMS_IP_PORT "Enter the list of modems IP:PORT to monitor"
 	ask value mandatory MAIL_FROM "Enter the sender email"
 	ask value mandatory MAIL_TO "Enter the recipient email"
 	ask secret mandatory API_KEY "Enter the SendGrid API key"
