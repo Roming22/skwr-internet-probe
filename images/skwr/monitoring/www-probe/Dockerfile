@@ -4,7 +4,7 @@ FROM   alpine
 # Default skwr config
 #
 RUN addgroup -g 9999 skwr \
-    && adduser -G skwr -S -u 9999 skwr
+    && adduser -G skwr -S --shell /bin/bash -u 9999 skwr
 ENV PATH="/opt/module/bin:$PATH"
 ENTRYPOINT ["run.sh"]
 HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
@@ -18,7 +18,9 @@ RUN apk add bash python3 py3-pip \
 
 # Add module
 COPY module /opt/module
-RUN chmod +x /opt/module/bin/*.sh
+RUN chmod +x /opt/module/bin/*.sh; \
+    mkdir -p /opt/module/data; \
+    chmod a+rwx /opt/module/data
 
 USER skwr
 
