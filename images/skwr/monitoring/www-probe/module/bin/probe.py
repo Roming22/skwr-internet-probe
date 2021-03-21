@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 import os
 import socket
 from time import sleep
@@ -7,8 +8,11 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 
-def get_now():
-    return dt.datetime.now().replace(microsecond=0)
+def get_now(microsecond=False):
+    now = dt.datetime.now()
+    if not microsecond:
+        now.replace(microsecond=0)
+    return now
 
 
 def send_mail(body):
@@ -22,7 +26,7 @@ def send_mail(body):
         sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
         sg.send(message)
     except Exception as ex:
-        print(f"Could not send email: {ex}")
+        logging.error(f"Could not send email: {ex}")
 
 
 class Target:
@@ -34,12 +38,12 @@ class Target:
         self.connect()
 
     def connect(self):
+        logging.debug(f"Checking connection to {self.ip}:{self.port}")
         try:
             socket.create_connection((self.ip, self.port), 1).close()
             self.connected = True
         except:
-            if self.connected:
-                print(f"Could not connect to {self.name}={self.ip}:{self.port}")
+            logging.warning(f"Could not connect to {self.name}={self.ip}:{self.port}")
             self.connected = False
         return self.connected
 
@@ -68,14 +72,10 @@ class Connection:
             self.start_time = get_now()
             self.connected = self.check()
             with open("/opt/module/data/logs.csv", "a") as logs:
-                logs.write(
-                    "{};{};".format(self.start_time, "1" if self.connected else "0")
-                )
-        print(
-            "Internet is {}connected since {}.".format(
-                "" if self.connected else "dis", self.start_time
-            )
-        )
+                connected = "1" if self.connected else "0"
+                logs.write(f"{self.start_time};{connected};")
+        connected = "connected" if self.connected else "disconnected"
+        logging.info(f"Internet is {connected} since {self.start_time}.")
 
     def check(self):
         connected = False
@@ -92,12 +92,21 @@ class Connection:
             send_mail("Internet was disconnected for {}".format(duration))
 
     def monitor(self):
-        print("Last know status: {}connected".format("" if self.connected else "dis"))
+        interval = int(os.environ.get("INTERVAL", "5"))
+        logging.info(f"Polling interval: {interval}s")
+        logging.info("Last know status: {}connected".format("" if self.connected else "dis"))
         while True:
+            if self.connected:
+                # Try to prevent clock skew
+                now = get_now(microsecond=True)
+                sleep(interval - ( ( now.second + (now.microsecond/10**6) ) % interval ))
+            else:
+                sleep(1)
+
             if self.connected != self.check():
                 now = get_now()
                 duration = now - self.start_time
-                print(
+                logging.info(
                     "Internet was {}connected for {}.".format(
                         "" if self.connected else "dis", duration
                     )
@@ -105,11 +114,12 @@ class Connection:
                 self.connected = not self.connected
                 self.start_time = now
                 self.log(now, duration)
-            if self.connected:
-                sleep(5)
-            else:
-                sleep(1)
 
 
 if __name__ == "__main__":
+    log_level = logging.INFO
+    if os.environ.get("DEBUG", "0") != "0":
+        log_level = logging.DEBUG
+    logging.basicConfig(datefmt="%Y/%m/%d %H:%M:%S", format="%(asctime)s\t%(levelname)s\t%(message)s", level=log_level)
+
     Connection().monitor()

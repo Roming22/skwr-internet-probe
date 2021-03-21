@@ -1,6 +1,7 @@
 ---
 apiVersion: v1
 data:
+  DEBUG: "0"
   MAIL_FROM: $MAIL_FROM
   MAIL_TO: $MAIL_TO
   MODEMS_IP_PORT: $MODEMS_IP_PORT
