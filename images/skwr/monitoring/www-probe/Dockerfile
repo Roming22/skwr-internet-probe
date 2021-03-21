@@ -6,7 +6,7 @@ FROM   alpine
 RUN addgroup -g 9999 skwr \
     && adduser -G skwr -S --shell /bin/bash -u 9999 skwr
 ENV PATH="/opt/module/bin:$PATH"
-ENTRYPOINT ["run.sh"]
+ENTRYPOINT ["run.py"]
 HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
     CMD healthcheck.sh || exit 1
 
@@ -18,9 +18,10 @@ RUN apk add bash python3 py3-pip \
 
 # Add module
 COPY module /opt/module
-RUN chmod +x /opt/module/bin/*.sh; \
-    mkdir -p /opt/module/data; \
-    chmod a+rwx /opt/module/data
+RUN cd /opt/module; \
+    chmod +x bin/*.py bin/*.sh; \
+    mkdir -p data; \
+    chmod a+rwx data
 
 USER skwr
 

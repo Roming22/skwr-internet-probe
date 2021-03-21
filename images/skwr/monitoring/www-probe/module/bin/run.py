@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import datetime as dt
 import logging
 import os
@@ -11,7 +13,7 @@ from sendgrid.helpers.mail import Mail
 def get_now(microsecond=False):
     now = dt.datetime.now()
     if not microsecond:
-        now.replace(microsecond=0)
+        now = now.replace(microsecond=0)
     return now
 
 
@@ -84,42 +86,51 @@ class Connection:
         return connected
 
     def log(self, now, duration):
+        message = "Internet was {}connected for {}.".format(
+            "" if self.connected else "dis", duration
+        )
+        logging.info(message)
+
+        if not self.connected:
+            send_mail(message)
+
         with open("/opt/module/data/logs.csv", "a") as logs:
             logs.write(
                 "{};\n{};{};".format(duration, now, "1" if self.connected else "0")
             )
-        if self.connected:
-            send_mail("Internet was disconnected for {}".format(duration))
 
     def monitor(self):
         interval = int(os.environ.get("INTERVAL", "5"))
         logging.info(f"Polling interval: {interval}s")
-        logging.info("Last know status: {}connected".format("" if self.connected else "dis"))
+        logging.info(
+            "Last know status: {}connected".format("" if self.connected else "dis")
+        )
         while True:
             if self.connected:
                 # Try to prevent clock skew
                 now = get_now(microsecond=True)
-                sleep(interval - ( ( now.second + (now.microsecond/10**6) ) % interval ))
+                sleep(
+                    interval - ((now.second + (now.microsecond / 10 ** 6)) % interval)
+                )
             else:
                 sleep(1)
 
             if self.connected != self.check():
                 now = get_now()
                 duration = now - self.start_time
-                logging.info(
-                    "Internet was {}connected for {}.".format(
-                        "" if self.connected else "dis", duration
-                    )
-                )
+                self.log(now, duration)
                 self.connected = not self.connected
                 self.start_time = now
-                self.log(now, duration)
 
 
 if __name__ == "__main__":
     log_level = logging.INFO
     if os.environ.get("DEBUG", "0") != "0":
         log_level = logging.DEBUG
-    logging.basicConfig(datefmt="%Y/%m/%d %H:%M:%S", format="%(asctime)s\t%(levelname)s\t%(message)s", level=log_level)
+    logging.basicConfig(
+        datefmt="%Y/%m/%d %H:%M:%S",
+        format="%(asctime)s\t%(levelname)s\t%(message)s",
+        level=log_level,
+    )
 
     Connection().monitor()
