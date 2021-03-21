@@ -45,7 +45,10 @@ class Target:
             socket.create_connection((self.ip, self.port), 1).close()
             self.connected = True
         except:
-            logging.warning(f"Could not connect to {self.name}={self.ip}:{self.port}")
+            if self.connected:
+                logging.warning(
+                    f"Could not connect to {self.name}={self.ip}:{self.port}"
+                )
             self.connected = False
         return self.connected
 
