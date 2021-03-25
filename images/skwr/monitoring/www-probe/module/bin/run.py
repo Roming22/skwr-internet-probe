@@ -67,20 +67,26 @@ class Connection:
         self.modems = Target.get("modem", "MODEMS_IP_PORT")
         # self.dns = Target.get("dns", "DNS_IP_PORT")
         # self.websites = Target.get("website", "WEBSITES_IP_PORT")
+        self.interval = int(os.environ.get("INTERVAL", "5"))
+        logging.info(f"Polling interval: {self.interval}s")
 
         try:
             with open("/opt/module/data/logs.csv", "r") as logs:
                 last_row = logs.readlines()[-1].split(";")
                 self.start_time = dt.datetime.strptime(last_row[0], "%Y-%m-%d %H:%M:%S")
                 self.connected = bool(int(last_row[1]))
+                logging.info(
+                    "Last know status: {}connected since {}.".format("" if self.connected else "dis", self.start_time)
+                )
         except Exception as ex:
             self.start_time = get_now()
             self.connected = self.check()
             with open("/opt/module/data/logs.csv", "a") as logs:
                 connected = "1" if self.connected else "0"
                 logs.write(f"{self.start_time};{connected};")
-        connected = "connected" if self.connected else "disconnected"
-        logging.info(f"Internet is {connected} since {self.start_time}.")
+                logging.info(
+                    "Status: {}connected.".format("" if self.connected else "dis")
+                )
 
     def check(self):
         connected = False
@@ -90,11 +96,11 @@ class Connection:
 
     def log(self, now, duration):
         message = "Internet was {}connected for {}.".format(
-            "" if self.connected else "dis", duration
+            "dis" if self.connected else "", duration
         )
         logging.info(message)
 
-        if not self.connected:
+        if self.connected:
             send_mail(message)
 
         with open("/opt/module/data/logs.csv", "a") as logs:
@@ -103,27 +109,29 @@ class Connection:
             )
 
     def monitor(self):
-        interval = int(os.environ.get("INTERVAL", "5"))
-        logging.info(f"Polling interval: {interval}s")
-        logging.info(
-            "Last know status: {}connected".format("" if self.connected else "dis")
-        )
         while True:
             if self.connected:
-                # Try to prevent clock skew
-                now = get_now(microsecond=True)
-                sleep(
-                    interval - ((now.second + (now.microsecond / 10 ** 6)) % interval)
-                )
+                self.sleep(self.interval)
             else:
-                sleep(1)
+                self.sleep(1)
 
             if self.connected != self.check():
-                now = get_now()
-                duration = now - self.start_time
-                self.log(now, duration)
-                self.connected = not self.connected
-                self.start_time = now
+                self.update()
+
+    def update(self):
+        self.connected = not self.connected
+        now = get_now()
+        duration = now - self.start_time
+        self.log(now, duration)
+        self.start_time = now
+
+    @staticmethod
+    def sleep(duration: int):
+        # Try to prevent clock skew
+        now = get_now(microsecond=True)
+        sleep(
+            duration - ((now.second + (now.microsecond / 10 ** 6)) % duration)
+        )
 
 
 if __name__ == "__main__":
