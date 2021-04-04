@@ -13,7 +13,7 @@ HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
 #
 # Add module and packages
 #
-RUN apk add bash python3 py3-pip \
+RUN apk add bash curl python3 py3-pip \
     && pip3 install sendgrid
 
 # Add module
