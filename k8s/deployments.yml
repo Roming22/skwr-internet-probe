@@ -22,7 +22,7 @@ spec:
           persistentVolumeClaim:
             claimName: monitoring.network.www-probe.pvc
       containers:
-        - image: local.registry/skwr/monitoring/www-probe
+        - image: k3d-registry.localhost:5000/skwr/monitoring/www-probe
           name: www-probe
           env:
             - name: SENDGRID_API_KEY
